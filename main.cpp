@@ -143,9 +143,9 @@ bool check_valid_sudoku(bool is_pre = false)
             if (table[j][i])
                 s2.insert(table[j][i]), c2++;
         }
-        if (!is_pre && (s1.size() != n || s2.size() != n))
+        if (!is_pre && (int(s1.size()) != n || int(s2.size()) != n))
             return false;
-        if (is_pre && (s1.size() != c1 || s2.size() != c2))
+        if (is_pre && (int(s1.size()) != c1 || int(s2.size()) != c2))
             return false;
     }
     int sqrt_n = sqrt(n);
@@ -177,6 +177,10 @@ bool check_valid_sudoku(bool is_pre = false)
 
 void solveCSP(int table_filled_counter = 0)
 {
+    // if (table_filled_counter > 480)
+    // {
+    //     cout << table_filled_counter << "   " << var_set.size() << endl;
+    // }
     if (table_filled_counter == n * n)
     {
         cout << "Answer Found: " << endl;
@@ -186,7 +190,7 @@ void solveCSP(int table_filled_counter = 0)
             {
                 if (n > 9)
                 {
-                    cout << (table[i][j] > 9 ? "" : "0") << table[i][j] << ", ";
+                    cout << (table[i][j] > 9 ? "" : "0") << table[i][j] << (j < n - 1 ? ", " : "");
                 }
                 else
                     cout << table[i][j];
@@ -209,12 +213,13 @@ void solveCSP(int table_filled_counter = 0)
     //     cout << i.first << "  " << i.second.first << ' ' << i.second.second << endl;
     // cout << "---" << endl;
     auto domain = domains[mrv.first][mrv.second];
+    set<feild_data> cv_list_backup = get_cv_list_backup(mrv);
+    feild_data tmp = {domains[mrv.first][mrv.second].count(), mrv};
+
     for (int val = domain._Find_first(); val <= n; val = domain._Find_next(val)) //* 1_based
     {
         // cout << mrv.first << ' ' << mrv.second << " - " << val  << endl;
         table[mrv.first][mrv.second] = val;
-        feild_data tmp = {domains[mrv.first][mrv.second].count(), mrv};
-        set<feild_data> cv_list_backup = get_cv_list_backup(mrv);
         // cout << "-> " << table_filled_counter << "   " << mrv.first << ' ' << mrv.second << endl;
         // for (auto i : cv_list_backup)
         //     cout << i.first << "  " << i.second.first << ' ' << i.second.second << endl;
@@ -250,7 +255,7 @@ int main()
         update_domains(cv_list, {x, y}, val);
     }
     if (check_valid_sudoku(true))
-    solveCSP(c);
+        solveCSP(c);
     cout << "Unsolvable CSP!";
     return 0;
 }
