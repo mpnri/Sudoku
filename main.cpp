@@ -4,6 +4,7 @@
 #include <set>
 #include <math.h>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 typedef pair<int, int> pii;
@@ -89,6 +90,26 @@ void restore_domains(set<feild_data> &cv_list, feild_data tmp, int val)
 pii get_MRV()
 {
     return var_set.begin()->second;
+}
+
+vector<pii> get_LCV(pii &pos, set<feild_data> &cv_list)
+{
+    vector<pii> vals;
+    auto &domain = domains[pos.first][pos.second];                               //*
+    for (int val = domain._Find_first(); val <= n; val = domain._Find_next(val)) //* 1_based
+    {
+        int cnt = 0;
+        for (auto neighbor : cv_list)
+        {
+            auto cv_pos = neighbor.second;
+            auto &cv_domain = domains[cv_pos.first][cv_pos.second];
+            if (cv_domain[val])
+                cnt++;
+        }
+        vals.push_back({cnt, val});
+    }
+    sort(vals.begin(), vals.end());
+    return vals;
 }
 
 set<feild_data> get_cv_list_backup(pii pos)
@@ -212,12 +233,15 @@ void solveCSP(int table_filled_counter = 0)
     // for (auto i : var_set)
     //     cout << i.first << "  " << i.second.first << ' ' << i.second.second << endl;
     // cout << "---" << endl;
-    auto domain = domains[mrv.first][mrv.second];
+    //auto domain = domains[mrv.first][mrv.second];
     set<feild_data> cv_list_backup = get_cv_list_backup(mrv);
     feild_data tmp = {domains[mrv.first][mrv.second].count(), mrv};
 
-    for (int val = domain._Find_first(); val <= n; val = domain._Find_next(val)) //* 1_based
+    vector<pii> vals = get_LCV(mrv, cv_list_backup);
+    //*for (int val = domain._Find_first(); val <= n; val = domain._Find_next(val)) //* 1_based
+    for (auto value : vals)
     {
+        int val = value.second;
         // cout << mrv.first << ' ' << mrv.second << " - " << val  << endl;
         table[mrv.first][mrv.second] = val;
         // cout << "-> " << table_filled_counter << "   " << mrv.first << ' ' << mrv.second << endl;
